@@ -7,6 +7,7 @@ import com.eidiko.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.apache.catalina.User;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,10 +16,12 @@ public class UserController {
 
     private final UserService userService;
     private final ModelMapper modelMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/saveUser")
     public UserDTO saveUser(@RequestBody SaveUserRequestDTO request) {
         UserEntity user = modelMapper.map(request, UserEntity.class);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userService.saveUser(user);
     }
 
