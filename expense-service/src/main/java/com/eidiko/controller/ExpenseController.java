@@ -2,11 +2,9 @@ package com.eidiko.controller;
 
 import com.eidiko.dto.SaveExpenseRequestDTO;
 import com.eidiko.dto.SaveExpenseResponseDTO;
-import com.eidiko.model.Expense;
 import com.eidiko.service.ExpenseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
