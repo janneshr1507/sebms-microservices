@@ -1,14 +1,17 @@
 package com.eidiko.service;
 
+import com.eidiko.dto.SaveUserRequestDTO;
 import com.eidiko.dto.UserDTO;
+import com.eidiko.exception.UserAlreadyExistsException;
 import com.eidiko.exception.UserNotFoundException;
 import com.eidiko.model.UserEntity;
 import com.eidiko.repository.UserRepository;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -16,8 +19,23 @@ public class UserService {
 
     private final UserRepository userRepo;
     private final ModelMapper modelMapper;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserDTO saveUser(UserEntity user) {
+    @Transactional
+    public UserDTO saveUser(SaveUserRequestDTO request) {
+        //Checking whether the user already exists or not by email and username.
+        //If user exists throwing user-defined exception.
+        if(userRepo.existsByEmail(request.getEmail())) {
+            throw new UserAlreadyExistsException("User already exists with the email: " + request.getEmail());
+        } else if(userRepo.existsByUsername(request.getUsername())) {
+            throw new UserAlreadyExistsException("User already exists with the username: " + request.getUsername());
+        }
+
+        UserEntity user = new UserEntity();
+        user.setUsername(request.getUsername());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setEmail(request.getEmail());
+
         UserEntity response = userRepo.save(user);
         return modelMapper.map(response, UserDTO.class);
     }
