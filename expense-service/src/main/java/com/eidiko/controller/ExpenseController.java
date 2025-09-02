@@ -22,4 +22,14 @@ public class ExpenseController {
     public SaveExpenseResponseDTO getExpense(@RequestParam("id") Long id) {
         return expenseService.getExpense(id);
     }
+
+    @GetMapping("/getExpensesByUserId")
+    public SaveExpenseResponseDTO[] getExpensesByUserId(@RequestParam("userId") Long userId) {
+        return expenseService.getExpensesByUserId(userId);
+    }
+
+    @DeleteMapping("/deleteExpense")
+    public void deleteExpense(@RequestParam("id") Long id) {
+        expenseService.deleteExpense(id);
+    }
 }

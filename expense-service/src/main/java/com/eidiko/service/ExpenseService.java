@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ExpenseService {
@@ -39,5 +41,21 @@ public class ExpenseService {
                 .orElseThrow(() -> new ExpenseNotFoundException("Expense not found with the id: " + id));
 
         return modelMapper.map(expense, SaveExpenseResponseDTO.class);
+    }
+
+    public SaveExpenseResponseDTO[] getExpensesByUserId(Long userId) {
+        List<Expense> list = expenseRepo.findByUserId(userId);
+        SaveExpenseResponseDTO[] response = list.stream()
+                .map(expense -> modelMapper.map(expense, SaveExpenseResponseDTO.class))
+                .toArray(SaveExpenseResponseDTO[]::new);
+
+        return response;
+    }
+
+    public void deleteExpense(Long id) {
+        if(!expenseRepo.existsById(id)) {
+            throw new ExpenseNotFoundException("Expense not found with the id: " + id);
+        }
+        expenseRepo.deleteById(id);
     }
 }
