@@ -1,13 +1,15 @@
 package com.eidiko.service;
 
 import com.eidiko.client.UserClient;
-import com.eidiko.dto.UserDTO;
+import com.eidiko.dto.SaveExpenseRequestDTO;
+import com.eidiko.dto.SaveExpenseResponseDTO;
+import com.eidiko.exception.ExpenseNotFoundException;
 import com.eidiko.exception.UserNotFoundException;
 import com.eidiko.model.Expense;
 import com.eidiko.repository.ExpenseRepository;
 import feign.FeignException.NotFound;
 import lombok.RequiredArgsConstructor;
-import org.springframework.jmx.export.notification.UnableToSendNotificationException;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,15 +17,27 @@ import org.springframework.stereotype.Service;
 public class ExpenseService {
 
     private final ExpenseRepository expenseRepo;
+    private final ModelMapper modelMapper;
     private final UserClient userClient;
 
-    public Expense saveExpense(Expense expense) {
-        Long id = expense.getUserId();
+    public SaveExpenseResponseDTO saveExpense(SaveExpenseRequestDTO request) {
+        Long id = request.getUserId();
         try {
-            UserDTO user = userClient.getUser(id);
+            userClient.getUser(id);
         } catch(NotFound e) {
-            throw new UserNotFoundException("Kindly provide userId in the request body");
+            throw new UserNotFoundException("Kindly provide valid userId in the request body");
         }
-        return expenseRepo.save(expense);
+        Expense expense = new Expense();
+        expense.setUserId(request.getUserId());
+        expense.setAmount(request.getAmount());
+        expense.setDescription(request.getDescription());
+        return modelMapper.map(expenseRepo.save(expense), SaveExpenseResponseDTO.class);
+    }
+
+    public SaveExpenseResponseDTO getExpense(Long id) {
+        Expense expense = expenseRepo.findById(id)
+                .orElseThrow(() -> new ExpenseNotFoundException("Expense not found with the id: " + id));
+
+        return modelMapper.map(expense, SaveExpenseResponseDTO.class);
     }
 }
