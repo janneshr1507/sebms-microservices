@@ -4,6 +4,7 @@ import com.eidiko.dto.SaveUserRequestDTO;
 import com.eidiko.dto.UserDTO;
 import com.eidiko.model.UserEntity;
 import com.eidiko.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.catalina.User;
 import org.modelmapper.ModelMapper;
@@ -15,14 +16,10 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
-    private final ModelMapper modelMapper;
-    private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/saveUser")
-    public UserDTO saveUser(@RequestBody SaveUserRequestDTO request) {
-        UserEntity user = modelMapper.map(request, UserEntity.class);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return userService.saveUser(user);
+    public UserDTO saveUser(@Valid @RequestBody SaveUserRequestDTO request) {
+        return userService.saveUser(request);
     }
 
     @GetMapping("/getUser")
